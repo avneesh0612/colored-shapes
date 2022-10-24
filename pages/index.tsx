@@ -1,53 +1,57 @@
-import { ConnectWallet } from "@thirdweb-dev/react";
+import {
+  ThirdwebNftMedia,
+  useContract,
+  useNFTs,
+  Web3Button,
+} from "@thirdweb-dev/react";
 import type { NextPage } from "next";
-import styles from "../styles/Home.module.css";
+import { colorsAddress, shapesAddress } from "../consts/addresses";
+import styles from "../styles/Theme.module.css";
 
 const Home: NextPage = () => {
+  const { contract } = useContract(colorsAddress);
+  const { data: nfts, isLoading, error } = useNFTs(contract);
+
   return (
     <div className={styles.container}>
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://thirdweb.com/">thirdweb</a>!
-        </h1>
+      <h1>Claim Shape</h1>
+      <Web3Button
+        action={(contract) => contract.erc721.claim(1)}
+        contractAddress={shapesAddress}
+        onError={(error) => console.log(error)}
+        onSuccess={() => alert("Claimed!")}
+      >
+        Claim
+      </Web3Button>
 
-        <p className={styles.description}>
-          Get started by configuring your desired network in{" "}
-          <code className={styles.code}>pages/_app.tsx</code>, then modify the{" "}
-          <code className={styles.code}>pages/index.tsx</code> file!
-        </p>
+      <h1>Claim Color</h1>
+      {isLoading && <p>Loading...</p>}
+      {error && <p>{error}</p>}
+      {nfts && (
+        <div className={styles.cards}>
+          {nfts.map((nft) => (
+            <div key={nft.metadata.id} className={styles.card}>
+              <ThirdwebNftMedia
+                metadata={nft.metadata}
+                className={styles.image}
+              />
+              <p>{nft.metadata.name}</p>
 
-        <div className={styles.connect}>
-          <ConnectWallet />
+              <Web3Button
+                action={(contract) =>
+                  contract.erc1155.claim(nft.metadata.id, 1)
+                }
+                contractAddress={colorsAddress}
+                onError={(error) => console.log(error)}
+                onSuccess={() => alert("Claimed!")}
+                className={styles.button}
+              >
+                Claim
+              </Web3Button>
+            </div>
+          ))}
         </div>
-
-        <div className={styles.grid}>
-          <a href="https://portal.thirdweb.com/" className={styles.card}>
-            <h2>Portal &rarr;</h2>
-            <p>
-              Guides, references and resources that will help you build with
-              thirdweb.
-            </p>
-          </a>
-
-          <a href="https://thirdweb.com/dashboard" className={styles.card}>
-            <h2>Dashboard &rarr;</h2>
-            <p>
-              Deploy, configure and manage your smart contracts from the
-              dashboard.
-            </p>
-          </a>
-
-          <a
-            href="https://portal.thirdweb.com/templates"
-            className={styles.card}
-          >
-            <h2>Templates &rarr;</h2>
-            <p>
-              Discover and clone template projects showcasing thirdweb features.
-            </p>
-          </a>
-        </div>
-      </main>
+      )}
     </div>
   );
 };
