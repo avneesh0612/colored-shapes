@@ -44,7 +44,7 @@ const Wrap: NextPage = () => {
       const newSvg = svgContentShape.replace(
         /fill="none"/g,
         // @ts-ignore
-        `fill="#${colorNFT.metadata?.attributes[0]?.value}"`
+        `fill="${colorNFT.metadata?.attributes[0]?.value}"`
       );
 
       const hasApprovalShapes = await shapesContract?.call(
